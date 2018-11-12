@@ -12,7 +12,7 @@ export function parse(mixed, options = {}) {
   });
 }
 
-export function build(worksheets, options = {}) {
+export function build(worksheets, workbookOptions = {}) {
   const defaults = {
     bookType: 'xlsx',
     bookSST: false,
@@ -20,12 +20,12 @@ export function build(worksheets, options = {}) {
   };
   const workBook = new Workbook();
   worksheets.forEach((worksheet) => {
-    const name = worksheet.name || 'Sheet';
-    const data = buildSheetFromMatrix(worksheet.data || [], options);
+    const { name = 'Sheet', data = [], ...worksheetOptions } = worksheet;
+    const worksheetData = buildSheetFromMatrix(data, worksheetOptions);
     workBook.SheetNames.push(name);
-    workBook.Sheets[name] = data;
+    workBook.Sheets[name] = worksheetData;
   });
-  const excelData = XLSX.write(workBook, Object.assign({}, defaults, options));
+  const excelData = XLSX.write(workBook, workbookOptions);
   return excelData instanceof Buffer ? excelData : bufferFrom(excelData, 'binary');
 }
 
